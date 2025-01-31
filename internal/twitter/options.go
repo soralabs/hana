@@ -82,6 +82,22 @@ func WithTwitterMonitorInterval(min, max time.Duration) options.Option[Twitter] 
 	}
 }
 
+// WithTweetInterval sets the minimum and maximum tweet interval durations.
+// Returns an error if min is greater than max.
+// These intervals control how frequently the Twitter client should tweet.
+func WithTweetInterval(min, max time.Duration) options.Option[Twitter] {
+	return func(k *Twitter) error {
+		if min > max {
+			return fmt.Errorf("minimum interval cannot be greater than maximum interval")
+		}
+		k.twitterConfig.TweetInterval = IntervalConfig{
+			Min: min,
+			Max: max,
+		}
+		return nil
+	}
+}
+
 // WithTwitterCredentials sets the authentication credentials for the Twitter client.
 // ct0: Twitter's ct0 cookie value
 // authToken: Twitter's authentication token

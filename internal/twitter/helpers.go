@@ -10,10 +10,7 @@ import (
 )
 
 // getRandomInterval returns a random duration between the configured Min and Max intervals
-func (k *Twitter) getRandomInterval() time.Duration {
-	min := k.twitterConfig.MonitorInterval.Min
-	max := k.twitterConfig.MonitorInterval.Max
-
+func (k *Twitter) getRandomInterval(min, max time.Duration) time.Duration {
 	if min == max {
 		return min
 	}

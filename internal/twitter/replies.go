@@ -39,7 +39,7 @@ func (k *Twitter) monitorTwitter() {
 			}
 
 			// Calculate random interval within configured range
-			interval := k.getRandomInterval()
+			interval := k.getRandomInterval(k.twitterConfig.MonitorInterval.Min, k.twitterConfig.MonitorInterval.Max)
 			k.logger.Infof("Waiting %v until next Twitter check", interval)
 
 			select {

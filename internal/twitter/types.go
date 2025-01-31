@@ -41,5 +41,6 @@ type IntervalConfig struct {
 
 type TwitterConfig struct {
 	MonitorInterval IntervalConfig
+	TweetInterval   IntervalConfig
 	Credentials     TwitterCredentials
 }
