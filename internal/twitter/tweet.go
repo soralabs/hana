@@ -156,7 +156,7 @@ Your response must follow this structure:
 	// Generate completion
 	response, err := k.llmClient.GenerateCompletion(llm.CompletionRequest{
 		Messages:    messages,
-		ModelType:   llm.ModelTypeAdvanced,
+		ModelType:   llm.ModelTypeDefault,
 		Temperature: 0.7,
 	})
 	if err != nil {

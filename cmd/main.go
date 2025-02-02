@@ -49,7 +49,7 @@ func main() {
 		APIKey:       os.Getenv("OPENAI_API_KEY"),
 		ModelConfig: map[llm.ModelType]string{
 			llm.ModelTypeFast:     openai.GPT4oMini,
-			llm.ModelTypeDefault:  openai.GPT4oMini,
+			llm.ModelTypeDefault:  openai.GPT4o,
 			llm.ModelTypeAdvanced: openai.O1Mini,
 		},
 		Logger:  log.NewSubLogger("llm", &logger.SubLoggerOpts{}),
