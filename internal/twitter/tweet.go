@@ -89,7 +89,19 @@ func (k *Twitter) tweet() error {
 }
 
 func (k *Twitter) generateTweet(currentState *state.State) (*db.Fragment, error) {
-	templateBuilder := state.NewPromptBuilder(currentState).
+	templateBuilder := state.NewPromptBuilder(currentState)
+
+	templateBuilder.WithHelper("formatInteractions", func(fragments []db.Fragment) string {
+		var builder strings.Builder
+		for _, f := range fragments {
+			builder.WriteString(fmt.Sprintf("[%s] %s\n",
+				time.Since(f.CreatedAt).Round(time.Second),
+				f.Content))
+		}
+		return builder.String()
+	})
+
+	templateBuilder.
 		AddSystemSection(`You embody this core identity:
 {{.base_personality}}
 
@@ -118,8 +130,8 @@ TWEET GUIDELINES:
 7. Maintain a consistent tone across your timeline
 
 Available Context:
-# Previous Tweets and Interactions
-{{.twitter_conversations}}
+# Previous Tweets
+{{formatInteractions .RecentInteractions}}
 
 Your response must follow this structure:
 
