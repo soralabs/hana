@@ -309,7 +309,7 @@ Respond to the user's tweet marked with →`).
 	// Generate completion
 	response, err := k.llmClient.GenerateCompletion(llm.CompletionRequest{
 		Messages:    messages,
-		ModelType:   llm.ModelTypeDefault,
+		ModelType:   llm.ModelTypeAdvanced,
 		Temperature: 0.7,
 	})
 	if err != nil {
