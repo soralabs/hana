@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	sora_manager "github.com/soralabs/hana/internal/managers/sora"
 	"github.com/soralabs/zen/db"
 	"github.com/soralabs/zen/engine"
 	"github.com/soralabs/zen/id"
@@ -78,6 +79,8 @@ func (k *Twitter) create() error {
 	insightFragmentStore := stores.NewFragmentStore(k.ctx, k.database, db.FragmentTableInsight)
 	twitterFragmentStore := stores.NewFragmentStore(k.ctx, k.database, db.FragmentTableTwitter)
 
+	soraFragmentStore := stores.NewFragmentStore(k.ctx, k.database, sora_manager.FragmentTableSora)
+
 	assistantName := "zen"
 	assistantID := id.FromString("zen")
 
@@ -97,6 +100,19 @@ func (k *Twitter) create() error {
 	if err != nil {
 		return err
 	}
+
+	soraManager, err := sora_manager.NewSoraManager(
+		[]options.Option[manager.BaseManager]{
+			manager.WithLogger(k.logger.NewSubLogger("sora", &logger.SubLoggerOpts{})),
+			manager.WithContext(k.ctx),
+			manager.WithActorStore(actorStore),
+			manager.WithLLM(k.llmClient),
+			manager.WithSessionStore(sessionStore),
+			manager.WithFragmentStore(soraFragmentStore),
+			manager.WithInteractionFragmentStore(interactionFragmentStore),
+			manager.WithAssistantDetails(assistantName, assistantID),
+		},
+	)
 
 	personalityManager, err := personality.NewPersonalityManager(
 		[]options.Option[manager.BaseManager]{
@@ -186,7 +202,7 @@ func (k *Twitter) create() error {
 		engine.WithSessionStore(sessionStore),
 		engine.WithActorStore(actorStore),
 		engine.WithInteractionFragmentStore(interactionFragmentStore),
-		engine.WithManagers(insightManager, personalityManager),
+		engine.WithManagers(insightManager, personalityManager, soraManager),
 	)
 	if err != nil {
 		return err
