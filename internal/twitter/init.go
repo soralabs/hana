@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/soralabs/hana/internal/managers/guardrails"
 	sora_manager "github.com/soralabs/hana/internal/managers/sora"
 	"github.com/soralabs/zen/db"
 	"github.com/soralabs/zen/engine"
@@ -80,6 +81,7 @@ func (k *Twitter) create() error {
 	twitterFragmentStore := stores.NewFragmentStore(k.ctx, k.database, db.FragmentTableTwitter)
 
 	soraFragmentStore := stores.NewFragmentStore(k.ctx, k.database, sora_manager.FragmentTableSora)
+	guardrailsFragmentStore := stores.NewFragmentStore(k.ctx, k.database, guardrails.FragmentTableGuardrails)
 
 	assistantName := "zen"
 	assistantID := id.FromString("zen")
@@ -109,6 +111,19 @@ func (k *Twitter) create() error {
 			manager.WithLLM(k.llmClient),
 			manager.WithSessionStore(sessionStore),
 			manager.WithFragmentStore(soraFragmentStore),
+			manager.WithInteractionFragmentStore(interactionFragmentStore),
+			manager.WithAssistantDetails(assistantName, assistantID),
+		},
+	)
+
+	guardrailsManager, err := guardrails.NewGuardrailsManager(
+		[]options.Option[manager.BaseManager]{
+			manager.WithLogger(k.logger.NewSubLogger("guardrails", &logger.SubLoggerOpts{})),
+			manager.WithContext(k.ctx),
+			manager.WithActorStore(actorStore),
+			manager.WithLLM(k.llmClient),
+			manager.WithSessionStore(sessionStore),
+			manager.WithFragmentStore(guardrailsFragmentStore),
 			manager.WithInteractionFragmentStore(interactionFragmentStore),
 			manager.WithAssistantDetails(assistantName, assistantID),
 		},
@@ -202,7 +217,7 @@ func (k *Twitter) create() error {
 		engine.WithSessionStore(sessionStore),
 		engine.WithActorStore(actorStore),
 		engine.WithInteractionFragmentStore(interactionFragmentStore),
-		engine.WithManagers(insightManager, personalityManager, soraManager),
+		engine.WithManagers(insightManager, personalityManager, soraManager, guardrailsManager),
 	)
 	if err != nil {
 		return err
