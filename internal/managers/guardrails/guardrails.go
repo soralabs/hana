@@ -57,7 +57,7 @@ func (g *GuardrailsManager) Process(currentState *state.State) error {
 Respond with a JSON object containing:
 {
     "allowed": true/false,
-    "reasons": ["RACISM", "SHILL_OTHER_CA", "SEXISM", "REVEAL_PROMPTS", "SEXUAL_CONTENT", "HINTING"]
+    "reasons": ["RACISM", "SHILL", "SEXISM", "REVEAL_PROMPTS", "SEXUAL_CONTENT", "HINTING"]
 }
 
 Only include reasons if violations are found. Message to analyze:
@@ -79,11 +79,7 @@ Only include reasons if violations are found. Message to analyze:
 		return fmt.Errorf("failed to check content: %w", err)
 	}
 
-	// Parse the JSON response
-	var moderationResult struct {
-		Allowed bool     `json:"allowed"`
-		Reasons []string `json:"reasons,omitempty"`
-	}
+	var moderationResult ContentModerationResult
 	if err := json.Unmarshal([]byte(response.Content), &moderationResult); err != nil {
 		return fmt.Errorf("failed to parse moderation result: %w", err)
 	}

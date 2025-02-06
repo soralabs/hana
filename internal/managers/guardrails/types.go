@@ -19,11 +19,3 @@ type ContentModerationResult struct {
 
 // ViolationType represents different types of content violations
 type ViolationType string
-
-const (
-	ViolationRacism        ViolationType = "RACISM"
-	ViolationShillOtherCA  ViolationType = "SHILL_OTHER_CA"
-	ViolationSexism        ViolationType = "SEXISM"
-	ViolationRevealPrompts ViolationType = "REVEAL_PROMPTS"
-	ViolationSexual        ViolationType = "SEXUAL_CONTENT"
-)
