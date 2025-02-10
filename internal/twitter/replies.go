@@ -9,7 +9,9 @@ import (
 	"github.com/pgvector/pgvector-go"
 	"github.com/soralabs/zen/db"
 	"github.com/soralabs/zen/id"
+	"github.com/soralabs/zen/manager"
 
+	"github.com/soralabs/hana/internal/managers/guardrails"
 	"github.com/soralabs/hana/internal/utils"
 	"github.com/soralabs/zen/llm"
 	"github.com/soralabs/zen/managers/insight"
@@ -184,6 +186,10 @@ func (k *Twitter) handleTweetProcessing(tweet *twitter.ParsedTweet) error {
 		return fmt.Errorf("failed to create state: %w", err)
 	}
 	currentState.AddCustomData("platform", "twitter")
+
+	if err := k.checkGuardrails(currentState); err != nil {
+		return fmt.Errorf("guardrails check failed: %w", err)
+	}
 
 	if err := k.assistant.Process(currentState); err != nil {
 		return fmt.Errorf("failed to process message: %w", err)
@@ -372,24 +378,24 @@ Respond to the user's tweet marked with →`).
 }
 
 // checkGuardrails checks the state using the guardrails processor by calling ProcessWithParams
-// func (k *Twitter) checkGuardrails(currentState *state.State) error {
-// 	if err := k.assistant.ProcessWithParams(currentState, params); err != nil {
-// 		return fmt.Errorf("guardrails check failed: %w", err)
-// 	}
+func (k *Twitter) checkGuardrails(currentState *state.State) error {
+	if err := k.assistant.ProcessWithFilter(currentState, []manager.ManagerID{guardrails.GuardrailsManagerID}); err != nil {
+		return fmt.Errorf("guardrails check failed: %w", err)
+	}
 
-// 	result, exists := currentState.GetManagerData(guardrails.GuardrailsResultKey)
-// 	if !exists {
-// 		return fmt.Errorf("guardrails result not found")
-// 	}
+	result, exists := currentState.GetManagerData(guardrails.GuardrailsResultKey)
+	if !exists {
+		return fmt.Errorf("guardrails result not found")
+	}
 
-// 	var guardRailsResult guardrails.ContentModerationResult
-// 	if err := mapstructure.Decode(result, &guardRailsResult); err != nil {
-// 		return fmt.Errorf("failed to decode guardrails result: %w", err)
-// 	}
+	var guardRailsResult guardrails.ContentModerationResult
+	if err := mapstructure.Decode(result, &guardRailsResult); err != nil {
+		return fmt.Errorf("failed to decode guardrails result: %w", err)
+	}
 
-// 	if !guardRailsResult.Allowed {
-// 		return fmt.Errorf("guardrails check failed: %v", guardRailsResult.Reasons)
-// 	}
+	if !guardRailsResult.Allowed {
+		return fmt.Errorf("guardrails check failed: %v", guardRailsResult.Reasons)
+	}
 
-// 	return nil
-// }
+	return nil
+}
