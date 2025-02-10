@@ -16,4 +16,9 @@ const (
 
 const (
 	SoraInformation state.StateDataKey = "sora_information"
+	SoraTokenData   state.StateDataKey = "sora_token_data"
+)
+
+const (
+	SoraMintAddress string = "89nnWMkWeF9LSJvAWcN2JFQfeWdDk6diKEckeToEU1hE"
 )

@@ -370,3 +370,26 @@ Respond to the user's tweet marked with →`).
 
 	return responseFragment, nil
 }
+
+// checkGuardrails checks the state using the guardrails processor by calling ProcessWithParams
+// func (k *Twitter) checkGuardrails(currentState *state.State) error {
+// 	if err := k.assistant.ProcessWithParams(currentState, params); err != nil {
+// 		return fmt.Errorf("guardrails check failed: %w", err)
+// 	}
+
+// 	result, exists := currentState.GetManagerData(guardrails.GuardrailsResultKey)
+// 	if !exists {
+// 		return fmt.Errorf("guardrails result not found")
+// 	}
+
+// 	var guardRailsResult guardrails.ContentModerationResult
+// 	if err := mapstructure.Decode(result, &guardRailsResult); err != nil {
+// 		return fmt.Errorf("failed to decode guardrails result: %w", err)
+// 	}
+
+// 	if !guardRailsResult.Allowed {
+// 		return fmt.Errorf("guardrails check failed: %v", guardRailsResult.Reasons)
+// 	}
+
+// 	return nil
+// }

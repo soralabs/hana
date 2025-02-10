@@ -1,6 +1,9 @@
 package sora_manager
 
 import (
+	"time"
+
+	"github.com/soralabs/zen/cache"
 	"github.com/soralabs/zen/db"
 	"github.com/soralabs/zen/manager"
 	"github.com/soralabs/zen/options"
@@ -17,6 +20,11 @@ func NewSoraManager(
 
 	pm := &SoraManager{
 		BaseManager: base,
+		cache: cache.New(cache.Config{
+			MaxSize:       1000,
+			TTL:           1 * time.Minute,
+			CleanupPeriod: 1 * time.Minute,
+		}),
 	}
 
 	if err := options.ApplyOptions(pm); err != nil {
@@ -65,7 +73,17 @@ As the primary AI representative, she embodies the technical sophistication of Z
 Hana serves as both a practical demonstration of Zen's capabilities and a bridge between Sora Labs and the community, showcasing how AI agents can provide meaningful interactions while handling complex tasks in the Solana ecosystem.`,
 	}
 
-	return []state.StateData{soraInfo}, nil
+	returnData := []state.StateData{soraInfo}
+
+	soraTokenData, err := s.getSoraTokenData()
+	if err != nil {
+		returnData = append(returnData, state.StateData{
+			Key:   SoraTokenData,
+			Value: soraTokenData,
+		})
+	}
+
+	return returnData, nil
 }
 
 // Store persists a message fragment to storage
