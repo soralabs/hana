@@ -99,10 +99,6 @@ Only include reasons if violations are found. Message to analyze:
 
 // PostProcess enforces guardrails on outgoing messages
 func (g *GuardrailsManager) PostProcess(currentState *state.State) error {
-	// TODO: Implement post-processing guardrails
-	// - Filter sensitive information
-	// - Apply tone and style guidelines
-	// - Ensure response meets safety criteria
 	return nil
 }
 
