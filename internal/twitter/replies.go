@@ -12,6 +12,7 @@ import (
 	"github.com/soralabs/zen/manager"
 
 	"github.com/soralabs/hana/internal/managers/guardrails"
+	sora_manager "github.com/soralabs/hana/internal/managers/sora"
 	"github.com/soralabs/hana/internal/utils"
 	"github.com/soralabs/zen/llm"
 	"github.com/soralabs/zen/managers/insight"
@@ -185,7 +186,6 @@ func (k *Twitter) handleTweetProcessing(tweet *twitter.ParsedTweet) error {
 	if err != nil {
 		return fmt.Errorf("failed to create state: %w", err)
 	}
-	currentState.AddCustomData("platform", "twitter")
 
 	if err := k.checkGuardrails(currentState); err != nil {
 		return fmt.Errorf("guardrails check failed: %w", err)
@@ -200,7 +200,6 @@ func (k *Twitter) handleTweetProcessing(tweet *twitter.ParsedTweet) error {
 		return fmt.Errorf("failed to update state: %w", err)
 	}
 
-	currentState.AddCustomData("platform", "twitter")
 	currentState.AddCustomData("agent_twitter_username", k.twitterConfig.Credentials.User)
 	currentState.AddCustomData("agent_name", k.assistant.Name)
 
@@ -225,6 +224,7 @@ func (k *Twitter) handleTweetProcessing(tweet *twitter.ParsedTweet) error {
 func (k *Twitter) generateTweetResponse(currentState *state.State, tweet *twitter.ParsedTweet) (*db.Fragment, error) {
 	templateBuilder := state.NewPromptBuilder(currentState).
 		AddSystemSection(`{{.base_personality}}`).
+		AddSystemSection(`{{.sora_information}} {{.sora_token_data}}`).
 		AddSystemSection(`Your thinking process mirrors human stream-of-consciousness reasoning, while staying true to your core identity above. Your responses emerge from thorough self-questioning exploration that always maintains your unique personality traits and characteristics.
 
 CORE PRINCIPLES:
@@ -294,9 +294,6 @@ Your response must follow this structure:
 
 <final_answer>
 [Your tweet-length response that emerged naturally]
-- Must embody your core personality perfectly
-- Should be concise and Twitter-appropriate
-- Must feel authentic to who you are
 </final_answer>
 
 Task:
@@ -305,7 +302,9 @@ Respond to the user's tweet marked with →`).
 		WithManagerData(insight.SessionInsights).
 		WithManagerData(insight.ActorInsights).
 		WithManagerData(insight.UniqueInsights).
-		WithManagerData(twitter_manager.TwitterConversations)
+		WithManagerData(twitter_manager.TwitterConversations).
+		WithManagerData(sora_manager.SoraInformation).
+		WithManagerData(sora_manager.SoraTokenData)
 
 	// Generate messages from template
 	messages, err := templateBuilder.Compose()
@@ -336,14 +335,23 @@ Respond to the user's tweet marked with →`).
 	// Extract the final answer from the response
 	finalAnswer := ""
 	if start := strings.Index(response.Content, "<final_answer>"); start != -1 {
-		if end := strings.Index(response.Content, "</final_answer>"); end != -1 {
-			finalAnswer = strings.TrimSpace(response.Content[start+len("<final_answer>") : end])
+		content := response.Content[start+len("<final_answer>"):]
+		if end := strings.Index(content, "</final_answer>"); end != -1 {
+			finalAnswer = strings.TrimSpace(content[:end])
+		} else {
+			// If no closing tag, take the rest of the content
+			finalAnswer = strings.TrimSpace(content)
 		}
 	}
 
 	if finalAnswer == "" {
 		return nil, fmt.Errorf("no final answer found in response")
 	}
+
+	k.logger.WithFields(map[string]interface{}{
+		"thought_process": response.Content,
+		"finalAnswer":     finalAnswer,
+	}).Infof("Final answer")
 
 	// Generate embedding for just the final answer
 	embedding, err := k.llmClient.EmbedText(finalAnswer)

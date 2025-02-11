@@ -47,6 +47,12 @@ github.com/soralabs/zen v0.0.2-0.20250210230436-16fdd477bde8 h1:06CD+lXhwQqf7ne0
 github.com/soralabs/zen v0.0.2-0.20250210230436-16fdd477bde8/go.mod h1:+2lwtqC+0xHdXKiBsaKjP2iCDXuHoeXWgHI1BtUT+Fo=
 github.com/soralabs/zen v0.0.2-0.20250210232800-c887b35ae96d h1:d/QU2NTpEN8Jgp04qL+cEWTlBKe87EDozVwvAbo9JJc=
 github.com/soralabs/zen v0.0.2-0.20250210232800-c887b35ae96d/go.mod h1:+2lwtqC+0xHdXKiBsaKjP2iCDXuHoeXWgHI1BtUT+Fo=
+github.com/soralabs/zen v0.0.2-0.20250211063231-5d933ce80a51 h1:KVOjMtMzNFB2PbQUrlkbMfiZf3xGBxL5/D96sPy14rg=
+github.com/soralabs/zen v0.0.2-0.20250211063231-5d933ce80a51/go.mod h1:+2lwtqC+0xHdXKiBsaKjP2iCDXuHoeXWgHI1BtUT+Fo=
+github.com/soralabs/zen v0.0.2-0.20250211072120-a63625403ea4 h1:hWiW3VzO4HfyvmcajMNpc1k3gd5hwiKffHF+ifvbriY=
+github.com/soralabs/zen v0.0.2-0.20250211072120-a63625403ea4/go.mod h1:+2lwtqC+0xHdXKiBsaKjP2iCDXuHoeXWgHI1BtUT+Fo=
+github.com/soralabs/zen v0.0.2-0.20250211074114-050de758e587 h1:fyVh1tXcs8PXaMo5Q6Qw81P63oFAT2a8i8p1AUrYJcw=
+github.com/soralabs/zen v0.0.2-0.20250211074114-050de758e587/go.mod h1:+2lwtqC+0xHdXKiBsaKjP2iCDXuHoeXWgHI1BtUT+Fo=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=

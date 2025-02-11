@@ -1,9 +1,9 @@
 package guardrails
 
 import (
-	"encoding/json"
 	"fmt"
 
+	"github.com/soralabs/hana/internal/utils"
 	"github.com/soralabs/zen/db"
 	"github.com/soralabs/zen/llm"
 	"github.com/soralabs/zen/manager"
@@ -80,7 +80,7 @@ Only include reasons if violations are found. Message to analyze:
 	}
 
 	var moderationResult ContentModerationResult
-	if err := json.Unmarshal([]byte(response.Content), &moderationResult); err != nil {
+	if err := utils.SmartUnmarshal([]byte(response.Content), &moderationResult); err != nil {
 		return fmt.Errorf("failed to parse moderation result: %w", err)
 	}
 
