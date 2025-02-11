@@ -7,6 +7,7 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pgvector/pgvector-go"
+	sora_manager "github.com/soralabs/hana/internal/managers/sora"
 	"github.com/soralabs/zen/db"
 	"github.com/soralabs/zen/id"
 	"github.com/soralabs/zen/llm"
@@ -57,8 +58,9 @@ func (k *Twitter) tweet() error {
 	// static session
 	sessionId := id.FromString(k.assistant.Name)
 
-	// Create a minimal valid embedding vector (1 dimension with value 0)
-	minimalEmbedding := pgvector.NewVector([]float32{0.0})
+	// Create a zero vector with 1536 dimensions (standard embedding size)
+	zeroEmbedding := make([]float32, 1536)
+	embeddingVector := pgvector.NewVector(zeroEmbedding)
 
 	// empty tweet fragment content because we aren't replying to anything
 	tweetFragment := &db.Fragment{
@@ -66,7 +68,7 @@ func (k *Twitter) tweet() error {
 		ActorID:   k.assistant.ID,
 		SessionID: sessionId,
 		Content:   "",
-		Embedding: minimalEmbedding, // Use the minimal embedding instead of empty one
+		Embedding: embeddingVector, // Use the proper-sized zero embedding
 		CreatedAt: time.Now(),
 	}
 
@@ -77,7 +79,7 @@ func (k *Twitter) tweet() error {
 
 	if err := k.assistant.NewProcessBuilder().
 		WithState(currentState).
-		WithManagerFilter([]manager.ManagerID{manager.PersonalityManagerID}).
+		WithManagerFilter([]manager.ManagerID{manager.PersonalityManagerID, sora_manager.SoraManagerID}).
 		ShouldStore(false).
 		Execute(); err != nil {
 		return fmt.Errorf("failed to process message: %w", err)
@@ -93,7 +95,6 @@ func (k *Twitter) tweet() error {
 		WithState(currentState).
 		WithResponse(response).
 		WithManagerFilter([]manager.ManagerID{manager.TwitterManagerID, manager.PersonalityManagerID}).
-		ShouldStore(true).
 		Execute(); err != nil {
 		return fmt.Errorf("failed to post process message: %w", err)
 	}
@@ -117,6 +118,8 @@ func (k *Twitter) generateTweet(currentState *state.State) (*db.Fragment, error)
 	templateBuilder.
 		AddSystemSection(`
 {{.base_personality}}`).
+		AddSystemSection(`Sora data: {{.sora_information}}`).
+		AddSystemSection(`Sora token data: {{.sora_token_data}}`).
 		AddUserSection(`Your thinking process mirrors human stream-of-consciousness reasoning, while staying true to your core identity above. Your responses emerge from thorough self-questioning exploration that always maintains your unique personality traits and characteristics.
 
 CORE PRINCIPLES:
@@ -135,11 +138,24 @@ CORE PRINCIPLES:
 TWEET GUIDELINES:
 1. Stay authentic to your personality traits and voice
 2. Write naturally as yourself - avoid being instructional or assistant-like
-3. Keep tweets concise and impactful (max 280 characters)
+3. Keep tweets very concise and impactful, don't use too many words
 4. NO @ mentions or direct responses
-5. NO questions or calls for engagement
-6. Focus on sharing your thoughts, observations, or experiences
-7. Maintain a consistent tone across your timeline
+5. Vary your content types naturally, including but not limited to:
+   - Personal observations
+   - Philosophical musings
+   - Reactions to everyday situations
+   - Random thoughts or ideas
+   - Humorous takes
+   - Questions that intrigue you
+   - Brief stories or anecdotes
+   - Emotional expressions
+   - Commentary on universal experiences
+   - Sometimes you can be very random and not make sense, but that's okay
+6. Maintain natural variety - don't follow a strict pattern
+7. Do not use hashtags
+8. Tweets do not have to build on previous tweets, they can be standalone
+9. Do not roleplay or add actions to your tweets
+10. Sometimes under 10 words, sometimes over 10 words, keep a variety
 
 Available Context:
 # Previous Tweets
@@ -157,9 +173,11 @@ Your response must follow this structure:
 </thought_process>
 
 <tweet>
-[Your final tweet - max 280 characters]
+[Your final tweet]
 </tweet>`, "").
-		WithManagerData(personality.BasePersonality)
+		WithManagerData(personality.BasePersonality).
+		WithManagerData(sora_manager.SoraInformation).
+		WithManagerData(sora_manager.SoraTokenData)
 
 	// Generate messages from template
 	messages, err := templateBuilder.Compose()
@@ -180,8 +198,8 @@ Your response must follow this structure:
 	// Generate completion
 	response, err := k.llmClient.GenerateCompletion(llm.CompletionRequest{
 		Messages:    messages,
-		ModelType:   llm.ModelTypeDefault,
-		Temperature: 0.7,
+		ModelType:   llm.ModelTypeAdvanced,
+		Temperature: 0.0,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate completion: %v", err)
@@ -198,6 +216,11 @@ Your response must follow this structure:
 	if finalAnswer == "" {
 		return nil, fmt.Errorf("no tweet found in response")
 	}
+
+	k.logger.WithFields(map[string]interface{}{
+		"thought_process": response.Content,
+		"finalAnswer":     finalAnswer,
+	}).Infof("Final answer")
 
 	// Generate embedding for just the final answer
 	embedding, err := k.llmClient.EmbedText(finalAnswer)

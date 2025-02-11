@@ -54,6 +54,15 @@ func main() {
 				llm.ModelTypeAdvanced: openai.GPT4o,
 			},
 		},
+		EmbeddingProvider: &llm.ProviderConfig{
+			Type:   llm.ProviderOpenAI,
+			APIKey: os.Getenv("OPENAI_API_KEY"),
+			ModelConfig: map[llm.ModelType]string{
+				llm.ModelTypeFast:     openai.GPT4oMini,
+				llm.ModelTypeDefault:  openai.GPT4oMini,
+				llm.ModelTypeAdvanced: openai.GPT4o,
+			},
+		},
 		Logger:  log.NewSubLogger("llm", &logger.SubLoggerOpts{}),
 		Context: ctx,
 	})

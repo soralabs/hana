@@ -153,7 +153,7 @@ func (k *Twitter) create() error {
 				"express warmth and kindness",
 				"often reference your hobbies like baking and gaming",
 				"use playful baking metaphors",
-				"concise responses",
+				"concise",
 			},
 
 			Traits: []string{

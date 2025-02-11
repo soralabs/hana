@@ -76,7 +76,7 @@ Hana serves as both a practical demonstration of Zen's capabilities and a bridge
 	returnData := []state.StateData{soraInfo}
 
 	soraTokenData, err := s.getSoraTokenData()
-	if err != nil {
+	if err == nil {
 		returnData = append(returnData, state.StateData{
 			Key:   SoraTokenData,
 			Value: soraTokenData,
