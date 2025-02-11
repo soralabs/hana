@@ -74,12 +74,47 @@ func (k *Twitter) checkTwitterTimeline() error {
 // fetchAndParseTweets retrieves and parses recent replies to the configured user.
 // Returns parsed tweets and any error encountered during fetching or parsing.
 func (k *Twitter) fetchAndParseTweets() ([]*twitter.ParsedTweet, error) {
-	timelineRes, err := k.twitterClient.SearchReplies(k.twitterConfig.Credentials.User, 10)
+	timelineRes, err := k.twitterClient.SearchReplies(k.twitterConfig.Credentials.User, 50)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search timeline: %w", err)
 	}
 
-	return k.twitterClient.ParseSearchTimelineResponse(timelineRes)
+	tweets, err := k.twitterClient.ParseSearchTimelineResponse(timelineRes)
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter tweets from last 24 hours and check for previous replies
+	cutoff := time.Now().Add(-24 * time.Hour)
+	recentTweets := make([]*twitter.ParsedTweet, 0)
+	for _, tweet := range tweets {
+		tweetTime := time.Unix(tweet.TweetCreatedAt, 0)
+		if !tweetTime.After(cutoff) {
+			continue
+		}
+
+		// Check if we've already replied to this tweet
+		tweetID := id.FromString(tweet.TweetID)
+		exists, err := k.assistant.DoesInteractionFragmentExist(tweetID)
+		if err != nil || exists {
+			continue
+		}
+
+		recentTweets = append(recentTweets, tweet)
+	}
+
+	// Randomly select up to 3 tweets
+	if len(recentTweets) > 3 {
+		rand.Shuffle(len(recentTweets), func(i, j int) {
+			recentTweets[i], recentTweets[j] = recentTweets[j], recentTweets[i]
+		})
+		recentTweets = recentTweets[:3]
+	}
+
+	k.logger.Infof("Found %d unprocessed tweets from last 24 hours, selected %d to process",
+		len(recentTweets), len(recentTweets))
+
+	return recentTweets, nil
 }
 
 // processAllTweets handles the processing of multiple tweets.

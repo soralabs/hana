@@ -155,8 +155,7 @@ TWEET GUIDELINES:
 7. Do not use hashtags
 8. Tweets do not have to build on previous tweets, they can be standalone
 9. Do not roleplay or add actions to your tweets
-10. Sometimes under 10 words, sometimes over 10 words, keep a variety
-11. Sometimes talk about Sora token statistics
+10. SOMETIMES speak about Sora token statistics
 
 Available Context:
 # Previous Tweets
@@ -174,7 +173,7 @@ Your response must follow this structure:
 </thought_process>
 
 <tweet>
-[Your final tweet]
+[Flow of the thought process. Do not make it so summary-like, but rather flow-like.]
 </tweet>`, "").
 		WithManagerData(personality.BasePersonality).
 		WithManagerData(sora_manager.SoraInformation).
@@ -209,8 +208,12 @@ Your response must follow this structure:
 	// Extract the final answer from the response
 	finalAnswer := ""
 	if start := strings.Index(response.Content, "<tweet>"); start != -1 {
-		if end := strings.Index(response.Content, "</tweet>"); end != -1 {
-			finalAnswer = strings.TrimSpace(response.Content[start+len("<tweet>") : end])
+		content := response.Content[start+len("<tweet>"):]
+		if end := strings.Index(content, "</tweet>"); end != -1 {
+			finalAnswer = strings.TrimSpace(content[:end])
+		} else {
+			// If no closing tag, take the rest of the content
+			finalAnswer = strings.TrimSpace(content)
 		}
 	}
 

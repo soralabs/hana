@@ -74,8 +74,8 @@ func main() {
 		twitter.WithDatabase(db),
 		twitter.WithLLM(llmClient),
 		twitter.WithTwitterMonitorInterval(
-			60*time.Second,  // min interval
-			120*time.Second, // max interval
+			4*time.Hour,  // min interval
+			12*time.Hour, // max interval
 		),
 		twitter.WithTweetInterval(
 			12*time.Hour, // min interval
