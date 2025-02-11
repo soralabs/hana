@@ -8,7 +8,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pgvector/pgvector-go v0.2.2
 	github.com/sashabaranov/go-openai v1.36.1
-	github.com/soralabs/zen v0.0.2-0.20250206050811-ba7641637003
+	github.com/soralabs/zen v0.0.2-0.20250210232800-c887b35ae96d
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
 	gorm.io/driver/postgres v1.5.10
 	gorm.io/gorm v1.25.12

@@ -43,6 +43,10 @@ github.com/soralabs/toolkit/go v0.0.0-20250104120828-ea094df8becc h1:q3RGLljkgGa
 github.com/soralabs/toolkit/go v0.0.0-20250104120828-ea094df8becc/go.mod h1:izOAac2gRnlFkdRkvDDLIUt1fMVnW2Y9Xot0ORfNjtg=
 github.com/soralabs/zen v0.0.2-0.20250206050811-ba7641637003 h1:msTSD5xDwCicxn1kWobia/NBxzk7uBJgasuTos4l1BU=
 github.com/soralabs/zen v0.0.2-0.20250206050811-ba7641637003/go.mod h1:+2lwtqC+0xHdXKiBsaKjP2iCDXuHoeXWgHI1BtUT+Fo=
+github.com/soralabs/zen v0.0.2-0.20250210230436-16fdd477bde8 h1:06CD+lXhwQqf7ne0Cqnwm/ZDehZEv0Gzke8/t47NW8I=
+github.com/soralabs/zen v0.0.2-0.20250210230436-16fdd477bde8/go.mod h1:+2lwtqC+0xHdXKiBsaKjP2iCDXuHoeXWgHI1BtUT+Fo=
+github.com/soralabs/zen v0.0.2-0.20250210232800-c887b35ae96d h1:d/QU2NTpEN8Jgp04qL+cEWTlBKe87EDozVwvAbo9JJc=
+github.com/soralabs/zen v0.0.2-0.20250210232800-c887b35ae96d/go.mod h1:+2lwtqC+0xHdXKiBsaKjP2iCDXuHoeXWgHI1BtUT+Fo=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=

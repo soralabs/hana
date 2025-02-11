@@ -64,6 +64,7 @@ func New(opts ...options.Option[Twitter]) (*Twitter, error) {
 
 func (k *Twitter) Start() error {
 	go k.monitorTwitter()
+	go k.tweetInterval()
 	return nil
 }
 
@@ -227,6 +228,7 @@ func (k *Twitter) create() error {
 		})),
 		engine.WithDB(k.database),
 		engine.WithIdentifier(assistantID, assistantName),
+		engine.WithLLMClient(k.llmClient),
 		engine.WithSessionStore(sessionStore),
 		engine.WithActorStore(actorStore),
 		engine.WithInteractionFragmentStore(interactionFragmentStore),

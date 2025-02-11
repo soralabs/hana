@@ -379,7 +379,11 @@ Respond to the user's tweet marked with →`).
 
 // checkGuardrails checks the state using the guardrails processor by calling ProcessWithParams
 func (k *Twitter) checkGuardrails(currentState *state.State) error {
-	if err := k.assistant.ProcessWithFilter(currentState, []manager.ManagerID{guardrails.GuardrailsManagerID}); err != nil {
+	if err := k.assistant.NewProcessBuilder().
+		WithState(currentState).
+		WithManagerFilter([]manager.ManagerID{guardrails.GuardrailsManagerID}).
+		ShouldStore(false).
+		Execute(); err != nil {
 		return fmt.Errorf("guardrails check failed: %w", err)
 	}
 

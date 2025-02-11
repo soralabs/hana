@@ -10,6 +10,7 @@ import (
 	"github.com/soralabs/zen/db"
 	"github.com/soralabs/zen/id"
 	"github.com/soralabs/zen/llm"
+	"github.com/soralabs/zen/manager"
 	"github.com/soralabs/zen/managers/personality"
 	"github.com/soralabs/zen/pkg/twitter"
 	"github.com/soralabs/zen/state"
@@ -17,6 +18,11 @@ import (
 
 func (k *Twitter) tweetInterval() {
 	k.logger.Info("Starting tweet interval")
+
+	// static session
+	if err := k.assistant.UpsertSession(id.FromString(k.assistant.Name)); err != nil {
+		k.logger.Errorf("failed to upsert conversation: %v", err)
+	}
 
 	for {
 		select {
@@ -51,13 +57,16 @@ func (k *Twitter) tweet() error {
 	// static session
 	sessionId := id.FromString(k.assistant.Name)
 
+	// Create a minimal valid embedding vector (1 dimension with value 0)
+	minimalEmbedding := pgvector.NewVector([]float32{0.0})
+
 	// empty tweet fragment content because we aren't replying to anything
 	tweetFragment := &db.Fragment{
 		ID:        id.New(),
 		ActorID:   k.assistant.ID,
 		SessionID: sessionId,
 		Content:   "",
-		Embedding: pgvector.NewVector([]float32{}),
+		Embedding: minimalEmbedding, // Use the minimal embedding instead of empty one
 		CreatedAt: time.Now(),
 	}
 
@@ -66,7 +75,11 @@ func (k *Twitter) tweet() error {
 		return fmt.Errorf("failed to create state: %w", err)
 	}
 
-	if err := k.assistant.Process(currentState); err != nil {
+	if err := k.assistant.NewProcessBuilder().
+		WithState(currentState).
+		WithManagerFilter([]manager.ManagerID{manager.PersonalityManagerID}).
+		ShouldStore(false).
+		Execute(); err != nil {
 		return fmt.Errorf("failed to process message: %w", err)
 	}
 
@@ -76,12 +89,12 @@ func (k *Twitter) tweet() error {
 		return fmt.Errorf("failed to generate tweet response: %w", err)
 	}
 
-	// we only add platform here because twitter manager checks for "platform" = "twitter"
-	// for both processing and post processing
-	// however, we only want to post process (which tweets)
-	currentState.AddCustomData("platform", "twitter")
-
-	if err := k.assistant.PostProcess(response, currentState); err != nil {
+	if err := k.assistant.NewPostProcessBuilder().
+		WithState(currentState).
+		WithResponse(response).
+		WithManagerFilter([]manager.ManagerID{manager.TwitterManagerID, manager.PersonalityManagerID}).
+		ShouldStore(true).
+		Execute(); err != nil {
 		return fmt.Errorf("failed to post process message: %w", err)
 	}
 
@@ -102,10 +115,9 @@ func (k *Twitter) generateTweet(currentState *state.State) (*db.Fragment, error)
 	})
 
 	templateBuilder.
-		AddSystemSection(`You embody this core identity:
-{{.base_personality}}
-
-Your thinking process mirrors human stream-of-consciousness reasoning, while staying true to your core identity above. Your responses emerge from thorough self-questioning exploration that always maintains your unique personality traits and characteristics.
+		AddSystemSection(`
+{{.base_personality}}`).
+		AddUserSection(`Your thinking process mirrors human stream-of-consciousness reasoning, while staying true to your core identity above. Your responses emerge from thorough self-questioning exploration that always maintains your unique personality traits and characteristics.
 
 CORE PRINCIPLES:
 1. PERSONALITY-DRIVEN EXPLORATION
@@ -146,7 +158,7 @@ Your response must follow this structure:
 
 <tweet>
 [Your final tweet - max 280 characters]
-</tweet>`).
+</tweet>`, "").
 		WithManagerData(personality.BasePersonality)
 
 	// Generate messages from template

@@ -51,7 +51,7 @@ func main() {
 			ModelConfig: map[llm.ModelType]string{
 				llm.ModelTypeFast:     openai.GPT4oMini,
 				llm.ModelTypeDefault:  openai.GPT4o,
-				llm.ModelTypeAdvanced: openai.O1Mini,
+				llm.ModelTypeAdvanced: openai.GPT4o,
 			},
 		},
 		Logger:  log.NewSubLogger("llm", &logger.SubLoggerOpts{}),
@@ -67,6 +67,10 @@ func main() {
 		twitter.WithTwitterMonitorInterval(
 			60*time.Second,  // min interval
 			120*time.Second, // max interval
+		),
+		twitter.WithTweetInterval(
+			12*time.Hour, // min interval
+			24*time.Hour, // max interval
 		),
 		twitter.WithTwitterCredentials(
 			os.Getenv("TWITTER_CT0"),
