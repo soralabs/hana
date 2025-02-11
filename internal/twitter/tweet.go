@@ -118,8 +118,8 @@ func (k *Twitter) generateTweet(currentState *state.State) (*db.Fragment, error)
 	templateBuilder.
 		AddSystemSection(`
 {{.base_personality}}`).
-		AddSystemSection(`Sora data: {{.sora_information}}`).
-		AddSystemSection(`Sora token data: {{.sora_token_data}}`).
+		AddUserSection(`{{.sora_information}}
+{{.sora_token_data}}`, "").
 		AddUserSection(`Your thinking process mirrors human stream-of-consciousness reasoning, while staying true to your core identity above. Your responses emerge from thorough self-questioning exploration that always maintains your unique personality traits and characteristics.
 
 CORE PRINCIPLES:
@@ -156,6 +156,7 @@ TWEET GUIDELINES:
 8. Tweets do not have to build on previous tweets, they can be standalone
 9. Do not roleplay or add actions to your tweets
 10. Sometimes under 10 words, sometimes over 10 words, keep a variety
+11. Sometimes talk about Sora token statistics
 
 Available Context:
 # Previous Tweets
