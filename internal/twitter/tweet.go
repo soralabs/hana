@@ -2,6 +2,7 @@ package twitter
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -78,7 +79,7 @@ func (k *Twitter) tweet() error {
 	}
 
 	// Fetch recent interactions
-	timelineRes, err := k.twitterClient.SearchReplies(k.twitterConfig.Credentials.User, 20)
+	timelineRes, err := k.twitterClient.SearchReplies(k.twitterConfig.Credentials.User, 10)
 	if err != nil {
 		return fmt.Errorf("failed to search timeline: %w", err)
 	}
@@ -86,6 +87,31 @@ func (k *Twitter) tweet() error {
 	recentTweets, err := k.twitterClient.ParseSearchTimelineResponse(timelineRes)
 	if err != nil {
 		return fmt.Errorf("failed to parse timeline: %w", err)
+	}
+
+	// Fetch replies from specific accounts
+	stvRes, err := k.twitterClient.SearchReplies("just__stv", 10)
+	if err != nil {
+		k.logger.Warnf("failed to fetch just__stv replies: %v", err)
+	} else {
+		stvTweets, err := k.twitterClient.ParseSearchTimelineResponse(stvRes)
+		if err != nil {
+			k.logger.Warnf("failed to parse just__stv replies: %v", err)
+		} else {
+			recentTweets = append(recentTweets, stvTweets...)
+		}
+	}
+
+	soraRes, err := k.twitterClient.SearchReplies("labs_sora", 10)
+	if err != nil {
+		k.logger.Warnf("failed to fetch labs_sora replies: %v", err)
+	} else {
+		soraTweets, err := k.twitterClient.ParseSearchTimelineResponse(soraRes)
+		if err != nil {
+			k.logger.Warnf("failed to parse labs_sora replies: %v", err)
+		} else {
+			recentTweets = append(recentTweets, soraTweets...)
+		}
 	}
 
 	currentState, err := k.assistant.NewStateFromFragment(tweetFragment)
@@ -97,6 +123,11 @@ func (k *Twitter) tweet() error {
 
 	// Add recent interactions to state
 	if len(recentTweets) > 0 {
+		// Sort tweets by creation time (most recent first)
+		sort.Slice(recentTweets, func(i, j int) bool {
+			return recentTweets[i].TweetCreatedAt > recentTweets[j].TweetCreatedAt
+		})
+
 		var recentInteractions []string
 		for _, tweet := range recentTweets {
 			recentInteractions = append(recentInteractions, fmt.Sprintf("@%s: %s", tweet.UserName, tweet.TweetText))
