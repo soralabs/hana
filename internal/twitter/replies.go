@@ -362,6 +362,7 @@ Respond to the user's tweet marked with →`).
 		Messages:    messages,
 		ModelType:   llm.ModelTypeDefault,
 		Temperature: 0.7,
+		Tools:       k.solanaToolkit.GetTools(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate completion: %v", err)
