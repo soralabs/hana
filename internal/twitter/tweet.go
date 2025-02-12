@@ -77,12 +77,32 @@ func (k *Twitter) tweet() error {
 		return fmt.Errorf("failed to get twitter user details: %w", err)
 	}
 
+	// Fetch recent interactions
+	timelineRes, err := k.twitterClient.SearchReplies(k.twitterConfig.Credentials.User, 20)
+	if err != nil {
+		return fmt.Errorf("failed to search timeline: %w", err)
+	}
+
+	recentTweets, err := k.twitterClient.ParseSearchTimelineResponse(timelineRes)
+	if err != nil {
+		return fmt.Errorf("failed to parse timeline: %w", err)
+	}
+
 	currentState, err := k.assistant.NewStateFromFragment(tweetFragment)
 	if err != nil {
 		return fmt.Errorf("failed to create state: %w", err)
 	}
 
 	currentState.AddCustomData("tweet_count", twitterDetails.Data.User.Result.Legacy.StatusesCount)
+
+	// Add recent interactions to state
+	if len(recentTweets) > 0 {
+		var recentInteractions []string
+		for _, tweet := range recentTweets {
+			recentInteractions = append(recentInteractions, fmt.Sprintf("@%s: %s", tweet.UserName, tweet.TweetText))
+		}
+		currentState.AddCustomData("recent_interactions", strings.Join(recentInteractions, "\n"))
+	}
 
 	if err := k.assistant.NewProcessBuilder().
 		WithState(currentState).
@@ -140,7 +160,7 @@ CORE PRINCIPLES:
 - Use thought patterns that reflect both your personality and natural contemplation
 - Express doubts and internal debate in your unique voice
 - Show work-in-progress thinking while staying in character
-- Revise and explore in ways true to your identity
+- Revise and explore with your distinct perspective
 
 TWEET GUIDELINES:
 1. Stay authentic to your personality traits and voice
@@ -167,6 +187,9 @@ TWEET GUIDELINES:
 This is your {{.tweet_count}}th tweet (including replies). If this is a significant milestone, come up with a unique way to celebrate it.
 
 Available Context:
+# Recent Mentions and Replies
+{{.recent_interactions}}
+
 # Previous Tweets
 {{formatInteractions .RecentInteractions}}
 
