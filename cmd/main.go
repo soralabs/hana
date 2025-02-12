@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sashabaranov/go-openai"
 	"github.com/soralabs/hana/internal/twitter"
+	"github.com/soralabs/solana-toolkit/go/toolkit"
 	"github.com/soralabs/zen/llm"
 	"github.com/soralabs/zen/logger"
 	"gorm.io/driver/postgres"
@@ -67,12 +68,19 @@ func main() {
 		Context: ctx,
 	})
 
+	// Create solana toolkit
+	solanaToolkit, err := toolkit.New(os.Getenv("SOLANA_RPC_URL"))
+	if err != nil {
+		log.Fatalf("Failed to create solana toolkit: %v", err)
+	}
+
 	// Create Twitter instance with options
 	k, err := twitter.New(
 		twitter.WithContext(ctx),
 		twitter.WithLogger(log.NewSubLogger("zen", &logger.SubLoggerOpts{})),
 		twitter.WithDatabase(db),
 		twitter.WithLLM(llmClient),
+		twitter.WithSolanaToolkit(solanaToolkit),
 		twitter.WithTwitterMonitorInterval(
 			4*time.Hour,  // min interval
 			12*time.Hour, // max interval

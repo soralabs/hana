@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	toolkit "github.com/soralabs/toolkit/go"
 	"github.com/soralabs/zen/llm"
 	"github.com/soralabs/zen/logger"
 	"github.com/soralabs/zen/options"
@@ -26,6 +27,9 @@ func (k *Twitter) ValidateRequiredFields() error {
 	}
 	if k.llmClient == nil {
 		return fmt.Errorf("LLM client is required")
+	}
+	if k.solanaToolkit == nil {
+		return fmt.Errorf("solana toolkit is required")
 	}
 	return nil
 }
@@ -107,6 +111,15 @@ func WithTwitterCredentials(ct0, authToken, user string) options.Option[Twitter]
 		k.twitterConfig.Credentials.CT0 = ct0
 		k.twitterConfig.Credentials.AuthToken = authToken
 		k.twitterConfig.Credentials.User = user
+		return nil
+	}
+}
+
+// WithSolanaToolkit sets the solana toolkit for the Twitter client.
+// The solana toolkit is used for interacting with the Solana blockchain.
+func WithSolanaToolkit(solanaToolkit *toolkit.Toolkit) options.Option[Twitter] {
+	return func(k *Twitter) error {
+		k.solanaToolkit = solanaToolkit
 		return nil
 	}
 }

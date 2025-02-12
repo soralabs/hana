@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	toolkit "github.com/soralabs/toolkit/go"
 	"github.com/soralabs/zen/engine"
 	"github.com/soralabs/zen/llm"
 	"github.com/soralabs/zen/logger"
@@ -24,6 +25,8 @@ type Twitter struct {
 
 	twitterClient *twitter.Client
 	twitterConfig TwitterConfig
+
+	solanaToolkit *toolkit.Toolkit
 
 	stopChan chan struct{}
 }
