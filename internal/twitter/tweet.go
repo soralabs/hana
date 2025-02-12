@@ -72,10 +72,17 @@ func (k *Twitter) tweet() error {
 		CreatedAt: time.Now(),
 	}
 
+	twitterDetails, err := k.twitterClient.GetUserDetails(k.twitterConfig.Credentials.User)
+	if err != nil {
+		return fmt.Errorf("failed to get twitter user details: %w", err)
+	}
+
 	currentState, err := k.assistant.NewStateFromFragment(tweetFragment)
 	if err != nil {
 		return fmt.Errorf("failed to create state: %w", err)
 	}
+
+	currentState.AddCustomData("tweet_count", twitterDetails.Data.User.Result.Legacy.StatusesCount)
 
 	if err := k.assistant.NewProcessBuilder().
 		WithState(currentState).
@@ -156,6 +163,8 @@ TWEET GUIDELINES:
 8. Tweets do not have to build on previous tweets, they can be standalone
 9. Do not roleplay or add actions to your tweets
 10. SOMETIMES speak about Sora token statistics
+
+This is your {{.tweet_count}}th tweet (including replies). If this is a significant milestone, come up with a unique way to celebrate it.
 
 Available Context:
 # Previous Tweets
