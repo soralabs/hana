@@ -103,12 +103,14 @@ func (k *Twitter) fetchAndParseTweets() ([]*twitter.ParsedTweet, error) {
 		recentTweets = append(recentTweets, tweet)
 	}
 
-	// Randomly select up to 3 tweets
-	if len(recentTweets) > 3 {
+	// Randomly select between 1-3 tweets
+	if len(recentTweets) > 0 {
 		rand.Shuffle(len(recentTweets), func(i, j int) {
 			recentTweets[i], recentTweets[j] = recentTweets[j], recentTweets[i]
 		})
-		recentTweets = recentTweets[:3]
+		maxTweets := min(3, len(recentTweets))
+		numTweets := 1 + rand.Intn(maxTweets) // Random number between 1 and maxTweets
+		recentTweets = recentTweets[:numTweets]
 	}
 
 	k.logger.Infof("Found %d unprocessed tweets from last 24 hours, selected %d to process",
