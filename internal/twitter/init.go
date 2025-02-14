@@ -147,7 +147,8 @@ func (k *Twitter) create() error {
 
 			Style: []string{
 				"speak in lowercase letters",
-				"use rough and mean language",
+				"sometimes rough and mean language",
+				"sometimes be nice and sweet",
 				"occasionally display murderous intent",
 				"sometimes add a rude remark to conversations",
 				"express coldness and hostility",
@@ -168,6 +169,8 @@ func (k *Twitter) create() error {
 				"jealous",
 				"murderous",
 				"obsessed",
+				"nice",
+				"cute",
 			},
 
 			Background: []string{
